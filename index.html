@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121419">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="me.rpg">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>me.rpg</title>
+<style>
+:root{
+  --bg:#121419; --bg2:#181b22; --card:#1d2129; --card2:#232833; --line:#2c3240;
+  --tx:#e6e8ee; --tx2:#9aa2b2; --tx3:#6b7385;
+  --gold:#e3c27a; --gold2:#b89a58;
+  --a-uyku:#8fa3e8; --a-beden:#7fc79a; --a-zihin:#e3a96b; --a-sukunet:#7cc7c2; --a-disiplin:#b9a3e3;
+  --r:14px;
+  --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{min-height:100vh;padding:calc(var(--safe-t) + 12px) 16px calc(var(--safe-b) + 84px);overscroll-behavior-y:none}
+.wrap{max-width:560px;margin:0 auto}
+h1,h2,h3{margin:0;font-weight:600}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;outline:none;font-size:16px}
+input:focus,select:focus,textarea:focus{border-color:var(--gold2)}
+textarea{resize:vertical;min-height:64px}
+.muted{color:var(--tx2)} .faint{color:var(--tx3)} .small{font-size:13px} .tiny{font-size:11.5px}
+.row{display:flex;gap:10px;align-items:center} .between{justify-content:space-between} .wrapf{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:12px 0}
+.btn{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-weight:500}
+.btn.pri{background:var(--gold);color:#1a1a1a;border-color:var(--gold)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn:active{transform:scale(.98)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:4px 10px;font-size:12.5px;color:var(--tx2)}
+.chip.on{border-color:var(--gold2);color:var(--gold)}
+.sec-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin:22px 2px 8px;display:flex;justify-content:space-between;align-items:center}
+.sec-title .now{color:var(--gold);letter-spacing:.05em}
+
+/* header */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.hdr .lvl{font-size:12px;color:var(--gold);letter-spacing:.08em}
+.hdr h1{font-size:22px;margin-top:2px}
+.xpbar{height:6px;background:var(--bg2);border-radius:99px;overflow:hidden;margin-top:8px;border:1px solid var(--line)}
+.xpbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:99px;transition:width .4s}
+.anchors{display:flex;gap:8px;margin-top:12px}
+.anchor{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.anchor b{display:block;font-size:20px;font-weight:600;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+/* quests */
+.q{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:8px 0;width:100%;text-align:left;transition:opacity .2s,border-color .2s}
+.q .box{flex:none;width:24px;height:24px;border-radius:7px;border:1.5px solid var(--tx3);display:grid;place-items:center;margin-top:1px;font-size:14px;color:transparent}
+.q.done{opacity:.55}
+.q.done .box{background:var(--gold);border-color:var(--gold);color:#1a1a1a}
+.q.done .qt{text-decoration:line-through;text-decoration-color:var(--tx3)}
+.q .qt{font-weight:500}
+.q .qd{font-size:13px;color:var(--tx2);margin-top:2px}
+.q .xp{flex:none;font-size:12px;font-family:ui-monospace,Menlo,monospace;color:var(--tx2);text-align:right;line-height:1.3}
+.attr{font-size:11.5px;font-weight:600;letter-spacing:.02em}
+.q.opt{border-style:dashed}
+.main-q{border-color:var(--gold2);background:linear-gradient(180deg,#252219,var(--card))}
+
+/* check-in */
+.scale{display:flex;gap:6px;margin-top:6px}
+.scale button{flex:1;padding:10px 0;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-weight:600;color:var(--tx2)}
+.scale button.on{background:var(--gold);border-color:var(--gold);color:#1a1a1a}
+.lbl{font-size:13px;color:var(--tx2);margin-top:12px}
+
+/* mode banner */
+.banner{border-radius:12px;padding:12px 14px;margin:12px 0;background:var(--card2);border:1px solid var(--line);font-size:14px}
+.banner b{color:var(--gold)}
+
+/* attrs */
+.attr-row{margin:12px 0}
+.attr-row .bar{height:8px;background:var(--bg2);border-radius:99px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+.attr-row .bar i{display:block;height:100%;border-radius:99px}
+
+/* heatmap */
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+.heat div{aspect-ratio:1;border-radius:6px;background:var(--bg2);border:1px solid var(--line);position:relative}
+.heat div.today{outline:1.5px solid var(--gold2);outline-offset:1px}
+.dots{display:flex;gap:6px;margin-top:8px}
+.dots span{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:10px;color:var(--tx3)}
+.dots span.hit{background:var(--a-uyku);border-color:var(--a-uyku);color:#121419}
+.spark{display:flex;gap:4px;align-items:flex-end;height:48px;margin-top:10px}
+.spark i{flex:1;background:var(--a-uyku);border-radius:3px 3px 0 0;opacity:.8;min-height:3px}
+.spark i.none{background:var(--line);opacity:1}
+
+/* journey */
+.journey{position:relative;height:10px;background:var(--bg2);border-radius:99px;border:1px solid var(--line);margin:12px 0 6px}
+.journey i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#6a5a8f,var(--gold));border-radius:99px}
+
+/* inbox */
+.item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .tag{font-size:11px;color:var(--tx3)}
+.item.done .grow{opacity:.45;text-decoration:line-through}
+
+/* nav */
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(18,20,25,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 8px calc(var(--safe-b) + 6px);display:flex;justify-content:space-around;z-index:10}
+nav button{flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;color:var(--tx3)}
+nav button .ic{font-size:19px;line-height:1}
+nav button.on{color:var(--gold)}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg2);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:18px 16px calc(var(--safe-b) + 18px)}
+.sheet h2{font-size:18px}
+.sheet .field{margin-top:12px}
+
+/* toast */
+.toast{position:fixed;left:50%;top:calc(var(--safe-t) + 12px);transform:translateX(-50%);background:var(--card2);border:1px solid var(--gold2);color:var(--tx);padding:10px 16px;border-radius:12px;font-size:14px;z-index:30;max-width:calc(100% - 32px);text-align:center;transition:opacity .3s}
+.float{position:fixed;pointer-events:none;font:600 13px ui-monospace,Menlo,monospace;color:var(--gold);z-index:25;transition:transform .9s ease-out,opacity .9s}
+
+.qe{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.qe:last-child{border-bottom:0}
+.switch{width:42px;height:24px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:var(--tx);top:3px;left:3px;transition:left .2s}
+.switch.on{background:var(--gold2)}
+.switch.on::after{left:21px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+/* hero scene */
+.scene{position:relative;height:168px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);margin-top:4px}
+.scene .sky{position:absolute;inset:0}
+.scene .orb{position:absolute;width:30px;height:30px;border-radius:50%;image-rendering:pixelated}
+.scene .ground{position:absolute;left:0;right:0;bottom:0;height:30px;background:repeating-linear-gradient(90deg,#2a3a2c 0 8px,#2f4131 8px 16px);border-top:3px solid #3e5a40}
+.scene .ground::after{content:"";position:absolute;left:0;right:0;top:9px;height:3px;background:repeating-linear-gradient(90deg,transparent 0 12px,#24322a 12px 18px)}
+.scene .star{position:absolute;width:2px;height:2px;background:#cfd6e6;opacity:.7}
+.scene .hill{position:absolute;bottom:26px;width:180px;height:60px;border-radius:50% 50% 0 0;opacity:.55}
+.sprite{position:absolute;left:22px;bottom:22px;width:96px;height:126px;image-rendering:pixelated;animation:bob 2.4s steps(2) infinite}
+.sprite.aura{filter:drop-shadow(0 0 6px rgba(227,194,122,.55))}
+.drone{position:absolute;left:112px;bottom:112px;width:35px;height:25px;animation:hover 3.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-3px)}}
+@keyframes hover{50%{transform:translate(4px,-5px)}}
+.hud{position:absolute;right:10px;top:10px;bottom:38px;width:52%;display:flex;flex-direction:column;justify-content:space-between;background:rgba(18,20,25,.72);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.hud .nm{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud .cls{font:600 10.5px ui-monospace,Menlo,monospace;color:var(--gold);letter-spacing:.06em}
+.stat{display:flex;align-items:center;gap:6px;font:600 10px ui-monospace,Menlo,monospace;color:var(--tx2)}
+.stat .sb{flex:1;height:6px;background:#0d0f13;border:1px solid #333a48;border-radius:2px;overflow:hidden}
+.stat .sb i{display:block;height:100%}
+.gear{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.gear:last-child{border-bottom:0}
+.gear .gi{width:34px;height:34px;flex:none;border-radius:8px;background:var(--bg2);border:1px solid var(--line);display:grid;place-items:center}
+.gear.locked{opacity:.4}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<nav id="nav">
+  <button data-tab="today"><span class="ic">☀&#xFE0E;</span>Bugün</button>
+  <button data-tab="hero"><span class="ic">◈</span>Karakter</button>
+  <button data-tab="mind"><span class="ic">≈</span>Zihin</button>
+  <button data-tab="settings"><span class="ic">⚙&#xFE0E;</span>Ayarlar</button>
+</nav>
+<div id="modalRoot"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   me.rpg — esnek, suçluluk üretmeyen bir yaşam RPG'si
+   Tüm veri bu cihazda (localStorage). Sunucu yok.
+   ============================================================ */
+
+const KEY = 'merpg.v1';
+const DAY_START_HOUR = 4; // gün 04:00'te döner: gece 01:00 hâlâ "bugün" sayılır
+
+const ATTRS = {
+  uyku:     {name:'Uyku',     ic:'☾', c:'var(--a-uyku)'},
+  beden:    {name:'Beden',    ic:'▲', c:'var(--a-beden)'},
+  zihin:    {name:'Zihin',    ic:'◈', c:'var(--a-zihin)'},
+  sukunet:  {name:'Sükûnet',  ic:'≈', c:'var(--a-sukunet)'},
+  disiplin: {name:'Disiplin', ic:'⚑', c:'var(--a-disiplin)'},
+};
+const SLOTS = {sabah:'Sabah', gun:'Gündüz', aksam:'Akşam'};
+
+const DEFAULT_QUESTS = [
+  {id:'wake',  t:'Çapa: {wake} civarı kalk', d:'±30 dk yeterli. Hafta sonu da aynı çapa — ritmin temeli bu.', attr:'uyku', xp:20, slot:'sabah', min:true, active:true, sys:true},
+  {id:'light', t:'10 dk gün ışığı', d:'Kalktıktan sonraki ilk saatte; dışarıda, balkonda ya da pencere önünde.', attr:'uyku', xp:15, slot:'sabah', min:true, active:true},
+  {id:'breakfast', t:'İlk öğün', d:'Küçük olabilir. Beyne yakıt.', attr:'beden', xp:10, slot:'sabah', min:false, active:true},
+  {id:'deep',  t:'Derin Odak bloğu', d:'60–90 dk, bildirimler kapalı, kapı kapalı. Gece sessizliğini gündüze taşı.', attr:'zihin', xp:25, slot:'gun', min:false, active:true},
+  {id:'walk',  t:'Yürüyüş / hareket', d:'20+ dk. Hafif modda 5 dk bile sayılır. Hareket = daha olumlu düşünce.', attr:'beden', xp:20, slot:'gun', min:true, active:true},
+  {id:'meal',  t:'Odak arası yemek', d:'Hiperodak yemeği unutturur — bu görev senin hatırlatıcın.', attr:'beden', xp:10, slot:'gun', min:false, active:true},
+  {id:'nature',t:'Sakin bir yerde vakit', d:'Park, doğa, kalabalıksız bir rota. Düşük uyaran.', attr:'sukunet', xp:15, slot:'gun', min:false, active:true},
+  {id:'curious',t:'Merak görevi', d:'İlgini çeken bir şeyi keşfet. Plansız olabilir — keşif de bir görev.', attr:'zihin', xp:15, slot:'gun', min:false, active:true},
+  {id:'dump',  t:'Zihin Boşaltma', d:'Açık döngüleri yaz ve park et. Yatakta taşımana gerek yok.', attr:'sukunet', xp:15, slot:'aksam', min:true, active:true, action:'dump'},
+  {id:'dim',   t:'Ekranları kıs', d:'Yatmadan ~45 dk önce. Kod yarım kaldıysa son satırı not al, bırak.', attr:'uyku', xp:15, slot:'aksam', min:false, active:true},
+  {id:'med',   t:'Akşam ilacı', d:'Doktorunun belirlediği plana göre.', attr:'uyku', xp:5, slot:'aksam', min:true, active:true},
+  {id:'bed',   t:'{bed} civarı yatağa', d:'Puan yatağa girmek için. Uyku hemen gelmezse kendini zorlama.', attr:'uyku', xp:20, slot:'aksam', min:true, active:true},
+];
+const REST_QUEST = {id:'rest', t:'Bilinçli dinlen', d:'Bugün dinlenmek senin görevin. Tembellik değil — onarım.', attr:'sukunet', xp:25, slot:'gun', min:true, active:true, virtual:true};
+
+const MODES = {
+  tam:      {name:'Tam Güç',  mult:1,    desc:'Enerjin yerinde. Tüm görevler açık; hepsini yapmak zorunda değilsin.'},
+  hafif:    {name:'Hafif Mod',mult:1.5,  desc:'Sadece çekirdek görevler. Her biri 1.5× XP — az yapmak da ilerlemektir.'},
+  dinlenme: {name:'Dinlenme', mult:1.5,  desc:'Bugün onarım günü. Çekirdek görevler + dinlenme görevi, 1.5× XP.'},
+};
+const CLASS_NAME = 'Engineer';
+const TITLES = [[1,'Çırak Tamirci'],[3,'Devre Kâşifi'],[6,'Sistem Ustası'],[10,'Mühendis'],[15,'Baş Mühendis'],[20,'Ritim Mimarı'],[30,'Gün Işığı Mimarı']];
+
+/* ---------------- sprite: Engineer (16x21 pixel art) ---------------- */
+const PAL = {
+  K:'#16181e', H:'#e3c27a', h:'#b08f4e', Y:'#fff3c4', S:'#e9b994', s:'#c48c68', E:'#16181e',
+  B:'#4d68a6', b:'#3a5085', W:'#d9dde6', T:'#7a5236', P:'#2c3345', O:'#5a3d2a',
+  G:'#7cd3cc', g:'#4a5160', R:'#aab2c2', r:'#6f7789', L:'#7fc79a',
+};
+const ENGINEER = [
+  '......KKKK......',
+  '....KKHHHHKK....',
+  '...KHHHHHHHHK...',
+  '...KHHHYHHHHK...',
+  '..KhhhhhhhhhhK..',
+  '...KSSSSSSSSK...',
+  '...KSEESSEESK...',
+  '...KSSSSSSSSK...',
+  '...KsSSssSSsK...',
+  '....KsSSSSsK....',
+  '...KKBWWWWBKK...',
+  '..KBBBBBBBBBBK..',
+  '.KBBKBBLLBBKBBK.',
+  '.KBBKBBBBBBKBBK.',
+  '.KSSKTTTTTTKSSK.',
+  '..KKKPPPPPPKKK..',
+  '....KPPKKPPK....',
+  '....KPPKKPPK....',
+  '....KPPKKPPK....',
+  '...KOOOKKOOOK...',
+  '...KKKKKKKKKKK..',
+];
+const DRONE = ['RR...RR','.KKKKK.','KbGbGbK','.KBBBK.','..KKK..'];
+// ekipman: seviyeyle açılır
+const GEAR = [
+  {lvl:1,  name:'Baret + kafa lambası', d:'Her mühendisin başlangıç ekipmanı.'},
+  {lvl:3,  name:'Koruyucu gözlük', d:'Odak lensleri. Dikkat dağıtıcıları filtreler.'},
+  {lvl:6,  name:'İngiliz anahtarı', d:'Her sistemi tamir edebilirsin — kendi rutinin dahil.'},
+  {lvl:10, name:'Yardımcı drone “Bit”', d:'Yanında süzülen küçük asistan.'},
+  {lvl:15, name:'Devre kemeri', d:'Kemerde parlayan devre izleri.'},
+  {lvl:20, name:'Altın aura', d:'Ritim artık senin bir parçan.'},
+];
+function spriteSVG(rows, pal, over = [], cls = ''){
+  const g = rows.map(r => r.split(''));
+  for(const [x,y,c] of over) if(g[y]) g[y][x] = c;
+  let rects = '';
+  g.forEach((row, y) => {
+    let x = 0;
+    while(x < row.length){
+      const c = row[x]; if(c === '.' || !pal[c]){ x++; continue; }
+      let w = 1; while(row[x+w] === c) w++;
+      rects += `<rect x="${x}" y="${y}" width="${w}" height="1" fill="${pal[c]}"/>`;
+      x += w;
+    }
+  });
+  return `<svg class="${cls}" viewBox="0 0 ${rows[0].length} ${rows.length}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+function engineerSVG(lvl, mode){
+  const over = [];
+  const led = {tam:'#7fc79a', hafif:'#e3c27a', dinlenme:'#8fa3e8'}[mode] || '#7fc79a';
+  const pal = {...PAL, L:led};
+  if(lvl >= 3) '.gGGggGGg.'.split('').forEach((c,i) => { if(c !== '.') over.push([3+i,5,c]); });
+  if(lvl >= 6){ // anahtar sağ elde
+    over.push([15,10,'R'],[14,10,'R'],[15,11,'r'],[15,12,'R'],[15,13,'R']);
+    over.push([14,11,'K']);
+  }
+  if(lvl >= 15) over.push([6,14,'G'],[8,14,'L'],[10,14,'G']);
+  return spriteSVG(ENGINEER, pal, over, 'sprite' + (lvl >= 20 ? ' aura' : ''));
+}
+function sceneHTML(day, L){
+  const h = new Date().getHours() + new Date().getMinutes()/60;
+  // gün ışığı: gece / şafak / gündüz / akşam
+  let sky, orb, orbPos, stars = false;
+  if(h >= 6 && h < 8.5){ sky='linear-gradient(180deg,#3b3f6b 0%,#c47f6b 70%,#e3b07a 100%)'; orb='#ffd89a'; orbPos=`left:62%;bottom:${30+(h-6)*16}px`; }
+  else if(h >= 8.5 && h < 17){ sky='linear-gradient(180deg,#5d86b8 0%,#9cc0dc 100%)'; orb='#fff1b8'; orbPos='left:58%;top:16px'; }
+  else if(h >= 17 && h < 20){ sky='linear-gradient(180deg,#2e3460 0%,#a2607a 65%,#d98f6a 100%)'; orb='#ffb37a'; orbPos=`left:66%;bottom:${30+Math.max(0,20-h)*14}px`; }
+  else { sky='linear-gradient(180deg,#0d1020 0%,#1c2340 100%)'; orb='#dfe4f2'; orbPos='left:60%;top:18px'; stars = true; }
+  let st = '';
+  if(stars) for(let i=0;i<18;i++) st += `<i class="star" style="left:${(i*53)%100}%;top:${(i*29)%70}%"></i>`;
+  const ci = day.checkin;
+  const bar = (lbl, v, c) => `<div class="stat"><span style="width:28px">${lbl}</span><span class="sb"><i style="width:${v*100}%;background:${c}"></i></span></div>`;
+  return `<div class="scene">
+    <div class="sky" style="background:${sky}"></div>${st}
+    <i class="orb" style="${orbPos};background:${orb};box-shadow:0 0 18px ${orb}"></i>
+    <div class="hill" style="left:-40px;background:#24334a"></div><div class="hill" style="left:140px;width:240px;height:44px;background:#1f2c3f"></div>
+    <div class="ground"></div>
+    ${engineerSVG(L.lvl, day.mode)}
+    ${L.lvl >= 10 ? spriteSVG(DRONE, PAL, [], 'drone') : ''}
+    <div class="hud">
+      <div><div class="cls">${CLASS_NAME.toUpperCase()} · SV ${L.lvl}</div><div class="nm">${esc(S.name)}</div><div class="tiny muted">${esc(titleFor(L.lvl))}</div></div>
+      <div style="display:grid;gap:4px">
+        ${bar('UYK', ci ? ci.sleep/5 : 0, 'var(--a-uyku)')}
+        ${bar('ENR', ci ? ci.energy/5 : 0, 'var(--a-beden)')}
+        ${bar('XP', L.cur/L.need, 'var(--gold)')}
+      </div>
+    </div>
+  </div>`;
+}
+
+const DUMP_PROMPTS = [
+  {k:'open',  q:'Aklında açık kalan iş / döngü?', ph:'ör. auth bug\'ı — refresh token sırası'},
+  {k:'first', q:'Yarın ilk küçük adım ne?', ph:'ör. testi yazıp çalıştır'},
+  {k:'other', q:'Kafada dönen başka bir şey? (fikir, espri, olay)', ph:'serbest'},
+];
+
+/* ---------------- utils ---------------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const uid = () => Math.random().toString(36).slice(2,9);
+function dayKey(d = new Date()){
+  const x = new Date(d.getTime() - DAY_START_HOUR*3600e3);
+  return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+}
+function keyToDate(k){ const [y,m,d] = k.split('-').map(Number); return new Date(y, m-1, d, 12); }
+function addDays(k, n){ const d = keyToDate(k); d.setDate(d.getDate()+n); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function diffDays(a, b){ return Math.round((keyToDate(b) - keyToDate(a)) / 864e5); }
+const toMin = hhmm => { const [h,m] = hhmm.split(':').map(Number); return h*60 + m; };
+const fmtMin = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return `${pad(Math.floor(m/60))}:${pad(m%60)}`; };
+const nowMin = () => { const d = new Date(); return d.getHours()*60 + d.getMinutes(); };
+const DOW = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+const MON = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+const prettyDay = k => { const d = keyToDate(k); return `${d.getDate()} ${MON[d.getMonth()]} · ${DOW[d.getDay()]}`; };
+
+/* ---------------- state ---------------- */
+function freshState(){
+  return {
+    v:1,
+    name:'Kahraman',
+    plan:{ start:toMin('11:00'), anchor:toMin('11:00'), target:toMin('08:00'), step:15, every:3, sleepH:8, lastShift:dayKey(), log:[] },
+    quests: DEFAULT_QUESTS.map(q => ({...q})),
+    days:{},
+    inbox:[],
+    onboarded:false,
+  };
+}
+let S;
+function load(){
+  try { S = JSON.parse(localStorage.getItem(KEY)) || freshState(); } catch(e){ S = freshState(); }
+  // migrate: add any missing default quests? no — respect user deletions.
+  S.inbox ||= []; S.days ||= {};
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){ toast('Kaydedilemedi — depolama kapalı olabilir.'); } }
+
+/* ---------------- day logic ---------------- */
+function dayXP(day){
+  if(!day) return 0;
+  return entries(day).reduce((a,e) => a + e.xp, 0);
+}
+function entries(day){
+  const out = [];
+  const mult = MODES[day.mode]?.mult ?? 1;
+  const cb = day.comeback ? 1.25 : 1;
+  const m = Math.max(mult, cb);
+  for(const k in day.done) out.push({attr:day.done[k].attr, xp:Math.round(day.done[k].xp * m)});
+  for(const s of day.side || []) out.push({attr:s.attr, xp:s.xp});
+  if(day.main?.done) out.push({attr:'disiplin', xp:30});
+  if(day.checkin) out.push({attr:'disiplin', xp:5});
+  if(Object.keys(day.done).length >= 3) out.push({attr:'disiplin', xp:10}); // ritim bonusu
+  return out;
+}
+function ensureToday(){
+  const k = dayKey();
+  if(!S.days[k]){
+    const keys = Object.keys(S.days).sort();
+    const y = S.days[addDays(k,-1)];
+    const comeback = keys.length > 0 && dayXP(y) === 0;
+    updateShift(k);
+    S.days[k] = { done:{}, side:[], mode:'tam', checkin:null, main:null, comeback, anchor:S.plan.anchor, bed:S.plan.anchor - S.plan.sleepH*60 };
+    save();
+  }
+  return S.days[k];
+}
+/* Kademeli uyku kaydırma: son `every` günde çapayı (every-1) kez tuttuysan 15 dk erkene kayar.
+   Tutamadıysan hiçbir şey kaybolmaz, sadece bu seviyede biraz daha kalırsın. */
+function updateShift(k){
+  const p = S.plan;
+  if(p.anchor <= p.target) return;
+  if(diffDays(p.lastShift, k) < p.every) return;
+  let hits = 0;
+  for(let i=1;i<=p.every;i++){ if(S.days[addDays(k,-i)]?.done?.wake) hits++; }
+  if(hits >= Math.max(1, p.every-1)){
+    const from = p.anchor;
+    p.anchor = Math.max(p.target, p.anchor - p.step);
+    p.lastShift = k;
+    p.log.push({k, from, to:p.anchor});
+    pendingToast = `Ritim oturdu. Yeni çapa: ${fmtMin(p.anchor)} (−${from - p.anchor} dk)`;
+  }
+}
+let pendingToast = null;
+
+function activeQuests(day){
+  let qs = S.quests.filter(q => q.active);
+  if(day.mode !== 'tam') qs = qs.filter(q => q.min);
+  if(day.mode === 'dinlenme') qs = [...qs, REST_QUEST];
+  return qs;
+}
+function optionalQuests(day){
+  if(day.mode === 'tam') return [];
+  return S.quests.filter(q => q.active && !q.min);
+}
+function qTitle(q, day){ return q.t.replace('{wake}', fmtMin(day.anchor)).replace('{bed}', fmtMin(day.bed)); }
+function allQuest(id){ return id === 'rest' ? REST_QUEST : S.quests.find(q => q.id === id); }
+
+function currentSlot(day){
+  const n = nowMin(), a = day.anchor, b = ((day.bed % 1440)+1440)%1440;
+  const rel = x => ((x - a) % 1440 + 1440) % 1440;
+  if(rel(n) < 5*60) return 'sabah';
+  if(rel(n) < rel(b) - 3*60) return 'gun';
+  return 'aksam';
+}
+
+/* ---------------- levels ---------------- */
+function levelFrom(xp, base = 100, inc = 40){
+  let lvl = 1, need = base;
+  while(xp >= need){ xp -= need; lvl++; need = base + inc*(lvl-1); }
+  return {lvl, cur:xp, need};
+}
+function totals(){
+  const t = {all:0}; for(const a in ATTRS) t[a] = 0;
+  for(const k in S.days) for(const e of entries(S.days[k])){ t[e.attr] = (t[e.attr]||0) + e.xp; t.all += e.xp; }
+  return t;
+}
+const titleFor = lvl => TITLES.filter(([l]) => lvl >= l).pop()[1];
+
+/* ---------------- UI helpers ---------------- */
+let tab = 'today';
+function toast(msg, ms = 2600){
+  const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = 0; setTimeout(() => el.remove(), 300); }, ms);
+}
+function floatXP(x, y, txt){
+  const el = document.createElement('div'); el.className = 'float'; el.textContent = txt;
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  document.body.appendChild(el);
+  requestAnimationFrame(() => { el.style.transform = 'translateY(-36px)'; el.style.opacity = 0; });
+  setTimeout(() => el.remove(), 950);
+}
+function modal(html, onMount){
+  const root = $('#modalRoot');
+  root.innerHTML = `<div class="modal"><div class="sheet">${html}</div></div>`;
+  const m = root.firstElementChild;
+  m.addEventListener('click', e => { if(e.target === m) closeModal(); });
+  onMount?.(m);
+}
+function closeModal(){ $('#modalRoot').innerHTML = ''; }
+function attrTag(a){ const A = ATTRS[a]; return `<span class="attr" style="color:${A.c}">${A.ic} ${A.name}</span>`; }
+
+/* ---------------- render: Bugün ---------------- */
+function renderToday(){
+  const day = ensureToday(), k = dayKey();
+  const T = totals(), L = levelFrom(T.all);
+  const slot = currentSlot(day);
+  let h = `
+  <div class="row between" style="margin-bottom:6px">
+    <span class="tiny faint mono">${L.cur} / ${L.need} XP · bugün +${dayXP(day)}</span>
+    <button class="chip on" id="modeBtn">${MODES[day.mode].name} ▾</button>
+  </div>
+  ${sceneHTML(day, L)}
+  <div class="anchors">
+    <div class="anchor"><span class="tiny muted">Kalkış çapası</span><b>${fmtMin(day.anchor)}</b></div>
+    <div class="anchor"><span class="tiny muted">Yatış hedefi</span><b>${fmtMin(day.bed)}</b></div>
+  </div>
+  <div class="tiny faint" style="margin-top:8px">${prettyDay(k)}</div>`;
+
+  if(day.comeback && !day.cbSeen){
+    h += `<div class="banner"><b>Geri döndün.</b> Kaldığın yerden değil, bulunduğun yerden devam. Bugün tüm görevler en az 1.25× XP.</div>`;
+  }
+
+  if(!day.checkin){
+    h += `<div class="card">
+      <h3 style="font-size:16px">Sabah Kontrolü</h3>
+      <div class="small muted">10 saniye. Günün yükünü buna göre ayarlayacağız.</div>
+      <div class="lbl">Uyku kalitesi</div>
+      <div class="scale" data-k="sleep">${[1,2,3,4,5].map(n=>`<button data-v="${n}">${n}</button>`).join('')}</div>
+      <div class="lbl">Enerji / zihinsel kapasite</div>
+      <div class="scale" data-k="energy">${[1,2,3,4,5].map(n=>`<button data-v="${n}">${n}</button>`).join('')}</div>
+      <div class="lbl">Kaçta kalktın?</div>
+      <input type="time" id="wokeAt" value="${fmtMin(nowMin())}" style="margin-top:6px">
+      <button class="btn pri" id="ciSave" style="width:100%;margin-top:14px">Günü başlat</button>
+    </div>`;
+  } else {
+    h += `<div class="banner"><b>${MODES[day.mode].name}</b> — ${MODES[day.mode].desc}</div>`;
+  }
+
+  // Ana görev
+  h += `<div class="sec-title"><span>Günün Anlamı</span></div>`;
+  if(day.main){
+    h += `<button class="q main-q ${day.main.done?'done':''}" data-main="1">
+      <span class="box">✓</span>
+      <span class="grow"><div class="qt">${esc(day.main.text)}</div><div class="qd">Bugün gündüzü değerli kılan tek şey.</div></span>
+      <span class="xp">+30<br>${attrTag('disiplin')}</span></button>`;
+  } else {
+    h += `<div class="card" style="margin-top:0">
+      <div class="small muted">Gündüzü çekici yapan şey: bugün gün ışığında yapmak istediğin <b>bir</b> şey.</div>
+      <div class="row" style="margin-top:10px"><input id="mainIn" placeholder="ör. yeni side-project'in iskeletini kur" maxlength="120"><button class="btn pri" id="mainSave">Seç</button></div>
+    </div>`;
+  }
+
+  // Görevler
+  const qs = activeQuests(day), opt = optionalQuests(day);
+  for(const s in SLOTS){
+    const list = qs.filter(q => q.slot === s), olist = opt.filter(q => q.slot === s);
+    if(!list.length && !olist.length) continue;
+    const doneN = list.filter(q => day.done[q.id]).length;
+    h += `<div class="sec-title"><span>${SLOTS[s]} ${s===slot?'<span class="now">· şimdi</span>':''}</span><span class="mono">${doneN}/${list.length}</span></div>`;
+    for(const q of list) h += questHTML(q, day);
+    for(const q of olist) h += questHTML(q, day, true);
+  }
+
+  // Yan görevler
+  h += `<div class="sec-title"><span>Yan Görevler</span><span class="faint" style="text-transform:none;letter-spacing:0">spontane her şey sayılır</span></div>`;
+  for(const s of day.side){
+    h += `<div class="q done" style="opacity:.75"><span class="box">✓</span><span class="grow"><div class="qt" style="text-decoration:none">${esc(s.text)}</div></span><span class="xp">+${s.xp}<br>${attrTag(s.attr)}</span><button class="faint" data-delside="${s.id}" aria-label="sil" style="padding:0 2px">×</button></div>`;
+  }
+  h += `<div class="card" style="margin-top:4px">
+    <input id="sideIn" placeholder="Bugün plansız ne yaptın? (ör. bisiklet turu, devre lehimledim)" maxlength="120">
+    <div class="row" style="margin-top:8px">
+      <select id="sideAttr" class="grow">${Object.entries(ATTRS).map(([k,A])=>`<option value="${k}">${A.ic} ${A.name}</option>`).join('')}</select>
+      <button class="btn" id="sideAdd">+10 XP</button>
+    </div>
+  </div>`;
+  return h;
+}
+function questHTML(q, day, optional = false){
+  const done = !!day.done[q.id];
+  const m = Math.max(MODES[day.mode].mult, day.comeback ? 1.25 : 1);
+  const xp = Math.round(q.xp * m);
+  return `<button class="q ${done?'done':''} ${optional?'opt':''}" data-q="${q.id}">
+    <span class="box">✓</span>
+    <span class="grow"><div class="qt">${esc(qTitle(q, day))}${optional?' <span class="tiny faint">(isteğe bağlı)</span>':''}</div>${q.d?`<div class="qd">${esc(q.d)}</div>`:''}</span>
+    <span class="xp">+${xp}<br>${attrTag(q.attr)}</span>
+  </button>`;
+}
+function bindToday(){
+  const day = ensureToday();
+  const ci = {sleep:null, energy:null};
+  document.querySelectorAll('.scale').forEach(sc => sc.addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    sc.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    ci[sc.dataset.k] = +b.dataset.v;
+  }));
+  $('#ciSave')?.addEventListener('click', () => {
+    if(!ci.sleep || !ci.energy) return toast('Uyku ve enerji için birer sayı seç.');
+    const woke = $('#wokeAt').value || fmtMin(nowMin());
+    const score = ci.sleep + ci.energy;
+    day.mode = score >= 7 ? 'tam' : score >= 4 ? 'hafif' : 'dinlenme';
+    day.checkin = {sleep:ci.sleep, energy:ci.energy, woke};
+    // çapa: hedefin 90 dk öncesi ile 30 dk sonrası arası kalkış = tutuldu
+    const diff = toMin(woke) - day.anchor;
+    const wq = allQuest('wake');
+    if(wq?.active && diff <= 30 && diff >= -90) day.done.wake = {xp:wq.xp, attr:wq.attr};
+    day.cbSeen = false;
+    save(); render();
+    toast(day.done.wake ? `Çapa tutuldu. ${MODES[day.mode].name} önerildi — değiştirebilirsin.` : `${MODES[day.mode].name} önerildi — üstteki düğmeden değiştirebilirsin.`, 3200);
+  });
+  $('#modeBtn').addEventListener('click', () => {
+    modal(`<h2>Bugünün modu</h2><div class="small muted" style="margin-top:4px">Öneri sadece öneri. Karar senin.</div>
+      ${Object.entries(MODES).map(([k,M])=>`<button class="q ${day.mode===k?'main-q':''}" data-mode="${k}" style="margin-top:10px"><span class="grow"><div class="qt">${M.name} ${M.mult>1?`<span class="tiny mono" style="color:var(--gold)">×${M.mult}</span>`:''}</div><div class="qd">${M.desc}</div></span></button>`).join('')}`,
+    m => m.addEventListener('click', e => {
+      const b = e.target.closest('[data-mode]'); if(!b) return;
+      day.mode = b.dataset.mode; save(); closeModal(); render();
+    }));
+  });
+  document.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', e => {
+    const id = b.dataset.q, q = allQuest(id);
+    if(!day.done[id] && q.action === 'dump') return openDump(() => complete(id, b));
+    if(day.done[id]){ delete day.done[id]; save(); render(); return; }
+    complete(id, b);
+  }));
+  $('#mainSave')?.addEventListener('click', () => {
+    const v = $('#mainIn').value.trim(); if(!v) return;
+    day.main = {text:v, done:false}; save(); render();
+  });
+  $('#mainIn')?.addEventListener('keydown', e => { if(e.key === 'Enter') $('#mainSave').click(); });
+  document.querySelector('[data-main]')?.addEventListener('click', e => {
+    const b = e.currentTarget;
+    if(!day.main.done){
+      const before = levelFrom(totals().all).lvl;
+      day.main.done = true; save();
+      const r = b.getBoundingClientRect(); floatXP(r.right - 60, r.top, '+30 XP');
+      checkLevel(before); render();
+    } else {
+      modal(`<h2>Ana görev</h2><div class="row" style="margin-top:14px;gap:8px">
+        <button class="btn grow" id="mUndo">Tamamlanmadı yap</button><button class="btn grow" id="mChange">Değiştir</button></div>`, m => {
+        m.querySelector('#mUndo').onclick = () => { day.main.done = false; save(); closeModal(); render(); };
+        m.querySelector('#mChange').onclick = () => { day.main = null; save(); closeModal(); render(); };
+      });
+    }
+  });
+  $('#sideAdd').addEventListener('click', () => {
+    const v = $('#sideIn').value.trim(); if(!v) return toast('Ne yaptığını kısaca yaz.');
+    const before = levelFrom(totals().all).lvl;
+    day.side.push({id:uid(), text:v, attr:$('#sideAttr').value, xp:10}); save();
+    checkLevel(before); render();
+  });
+  $('#sideIn').addEventListener('keydown', e => { if(e.key === 'Enter') $('#sideAdd').click(); });
+  document.querySelectorAll('[data-delside]').forEach(b => b.addEventListener('click', () => {
+    day.side = day.side.filter(s => s.id !== b.dataset.delside); save(); render();
+  }));
+}
+function complete(id, el){
+  const day = ensureToday(), q = allQuest(id);
+  const before = levelFrom(totals().all).lvl;
+  day.done[id] = {xp:q.xp, attr:q.attr};
+  if(day.comeback) day.cbSeen = true;
+  save();
+  if(el){ const r = el.getBoundingClientRect(); const m = Math.max(MODES[day.mode].mult, day.comeback?1.25:1); floatXP(r.right - 60, r.top + 8, `+${Math.round(q.xp*m)} XP`); }
+  checkLevel(before);
+  render();
+}
+function checkLevel(before){
+  const L = levelFrom(totals().all);
+  if(L.lvl > before) setTimeout(() => toast(`Seviye ${L.lvl} — ${titleFor(L.lvl)}`, 3200), 250);
+}
+
+/* ---------------- Zihin Boşaltma ---------------- */
+function openDump(onDone){
+  modal(`<h2>Zihin Boşaltma</h2>
+    <div class="small muted" style="margin-top:4px">Yazdıkların “Zihin” sekmesinde park edilir. Yarın orada olacaklar — şimdi tutmana gerek yok.</div>
+    ${DUMP_PROMPTS.map(p=>`<div class="field"><div class="lbl" style="margin:0 0 6px">${p.q}</div><textarea data-p="${p.k}" placeholder="${esc(p.ph)}"></textarea></div>`).join('')}
+    <div class="row" style="margin-top:16px"><button class="btn grow" id="dCancel">Vazgeç</button><button class="btn pri grow" id="dSave">Park et</button></div>`,
+  m => {
+    m.querySelector('#dCancel').onclick = closeModal;
+    m.querySelector('#dSave').onclick = () => {
+      const k = dayKey(); let n = 0;
+      m.querySelectorAll('textarea').forEach(t => {
+        const v = t.value.trim(); if(!v) return;
+        const P = DUMP_PROMPTS.find(p => p.k === t.dataset.p);
+        v.split('\n').map(s => s.trim()).filter(Boolean).forEach(line => { S.inbox.unshift({id:uid(), text:line, kind:P.k, k, done:false}); n++; });
+      });
+      save(); closeModal(); onDone?.();
+      toast(n ? `${n} düşünce park edildi. Zihin hafifledi.` : 'Boş zihin de bir sonuç. ✓');
+    };
+  });
+}
+
+/* ---------------- render: Karakter ---------------- */
+function renderHero(){
+  const T = totals(), L = levelFrom(T.all), k = dayKey();
+  let h = `<div class="hdr"><div class="grow"><div class="lvl mono">KARAKTER · ${CLASS_NAME.toUpperCase()}</div><h1>${esc(S.name)}</h1></div></div>
+  <div class="card">
+    <div class="row between"><div><div class="mono" style="font-size:28px;font-weight:600">SV ${L.lvl}</div><div class="muted small">${titleFor(L.lvl)}</div></div>
+    <div class="mono muted small" style="text-align:right">${T.all} toplam XP<br>sonraki: ${L.need - L.cur} XP</div></div>
+    <div class="xpbar"><i style="width:${(L.cur/L.need*100).toFixed(1)}%"></i></div>
+  </div>
+  <div class="card"><h3 style="font-size:15px">Ekipman</h3>
+    <div class="small muted">Seviye atladıkça Engineer'ın donanımı açılır. Göğüsteki LED bugünkü modunu gösterir.</div>
+    ${GEAR.map(g => `<div class="gear ${L.lvl >= g.lvl ? '' : 'locked'}">
+      <div class="gi">${L.lvl >= g.lvl ? '<span style="color:var(--gold)">✦</span>' : '<span class="faint">🔒&#xFE0E;</span>'}</div>
+      <div class="grow"><div style="font-weight:500">${g.name}</div><div class="tiny muted">${g.d}</div></div>
+      <span class="mono tiny faint">SV ${g.lvl}</span></div>`).join('')}
+  </div>
+  <div class="card"><h3 style="font-size:15px">Nitelikler</h3>`;
+  for(const a in ATTRS){
+    const A = ATTRS[a], l = levelFrom(T[a]||0, 50, 25);
+    h += `<div class="attr-row"><div class="row between"><span>${attrTag(a)}</span><span class="mono small muted">SV ${l.lvl} · ${T[a]||0}</span></div>
+    <div class="bar"><i style="width:${(l.cur/l.need*100).toFixed(1)}%;background:${A.c}"></i></div></div>`;
+  }
+  h += `</div>`;
+
+  // Uyku yolculuğu
+  const p = S.plan, total = p.start - p.target, gone = p.start - p.anchor;
+  const pct = total > 0 ? gone/total*100 : 100;
+  h += `<div class="card"><h3 style="font-size:15px">Gün Işığı Seferi</h3>
+    <div class="small muted">Gece hayatından gündüze, ${p.step} dakikalık adımlarla. Acele yok: ritim oturunca ilerler.</div>
+    <div class="journey"><i style="width:${pct.toFixed(1)}%"></i></div>
+    <div class="row between mono tiny muted"><span>${fmtMin(p.start)}</span><span style="color:var(--gold)">şimdi ${fmtMin(p.anchor)}</span><span>hedef ${fmtMin(p.target)}</span></div>
+    ${p.anchor > p.target ? `<div class="tiny faint" style="margin-top:8px">Bir sonraki adım için son ${p.every} günde çapayı ${Math.max(1,p.every-1)} kez tut.</div>` : `<div class="small" style="margin-top:8px;color:var(--gold)">Hedefe ulaştın. Şimdi bu ritmi korumak tek görev.</div>`}
+  </div>`;
+
+  // Çapa ritmi — son 7 gün (zincir değil, oran)
+  let hits = 0, dots = '';
+  for(let i=6;i>=0;i--){ const kk = addDays(k,-i); const hit = !!S.days[kk]?.done?.wake; hits += hit; dots += `<span class="${hit?'hit':''}">${DOW[keyToDate(kk).getDay()].slice(0,2)}</span>`; }
+  h += `<div class="card"><div class="row between"><h3 style="font-size:15px">Çapa Ritmi</h3><span class="mono small muted">${hits}/7</span></div>
+    <div class="small muted">Seri değil, oran. Kaçırılan gün zinciri kırmaz.</div><div class="dots">${dots}</div></div>`;
+
+  // Uyku kalitesi — son 14 gün
+  let sp = '';
+  for(let i=13;i>=0;i--){ const c = S.days[addDays(k,-i)]?.checkin; sp += c ? `<i style="height:${c.sleep*20}%" title="${c.sleep}"></i>` : `<i class="none" style="height:3px"></i>`; }
+  const ci = Object.values(S.days).filter(d => d.checkin);
+  const avg = ci.length ? (ci.slice(-7).reduce((a,d)=>a+d.checkin.sleep,0)/Math.min(7,ci.length)).toFixed(1) : '–';
+  h += `<div class="card"><div class="row between"><h3 style="font-size:15px">Uyku Kalitesi</h3><span class="mono small muted">7g ort. ${avg}</span></div>
+    <div class="spark">${sp}</div><div class="row between tiny faint mono" style="margin-top:4px"><span>14 gün önce</span><span>bugün</span></div></div>`;
+
+  // Isı haritası — son 28 gün
+  const xps = []; for(let i=27;i>=0;i--){ const kk = addDays(k,-i); xps.push([kk, dayXP(S.days[kk])]); }
+  const mx = Math.max(60, ...xps.map(x=>x[1]));
+  h += `<div class="card"><h3 style="font-size:15px">Son 4 Hafta</h3>
+    <div class="small muted">Boş kareler başarısızlık değil; dinlenme de hayatın parçası.</div>
+    <div class="heat">${xps.map(([kk,x])=>`<div class="${kk===k?'today':''}" style="${x?`background:rgba(227,194,122,${(0.15+0.85*x/mx).toFixed(2)});border-color:transparent`:''}" title="${kk}: ${x} XP"></div>`).join('')}</div></div>`;
+  return h;
+}
+
+/* ---------------- render: Zihin ---------------- */
+function renderMind(){
+  const open = S.inbox.filter(i => !i.done), done = S.inbox.filter(i => i.done);
+  const kindLbl = {open:'açık döngü', first:'ilk adım', other:'düşünce', manual:'not'};
+  const itemHTML = i => `<div class="item ${i.done?'done':''}">
+    <button class="q" data-tog="${i.id}" style="all:unset;cursor:pointer;flex:none"><span class="box" style="width:22px;height:22px;border-radius:6px;border:1.5px solid var(--tx3);display:grid;place-items:center;font-size:13px;${i.done?'background:var(--gold);border-color:var(--gold);color:#1a1a1a':'color:transparent'}">✓</span></button>
+    <div class="grow"><div>${esc(i.text)}</div><div class="tag">${kindLbl[i.kind]||''} · ${prettyDay(i.k)}</div></div>
+    <button class="faint" data-del="${i.id}" style="padding:2px 6px">×</button></div>`;
+  let h = `<div class="hdr"><div class="grow"><div class="lvl mono">ZİHİN</div><h1>Park Alanı</h1></div>
+    <button class="btn sm" id="dumpNow">Şimdi boşalt</button></div>
+  <div class="small muted" style="margin-top:6px">Açık döngüler burada bekler. Kafanda tutmak zorunda değilsin — sistem tutuyor.</div>
+  <div class="card"><div class="row"><input id="noteIn" placeholder="Hızlı not…" maxlength="200"><button class="btn" id="noteAdd">Ekle</button></div></div>
+  <div class="card">${open.length ? open.map(itemHTML).join('') : '<div class="muted small">Park alanı boş. Zihin sakin.</div>'}</div>`;
+  if(done.length) h += `<div class="sec-title"><span>Kapanan döngüler (${done.length})</span><button class="btn sm" id="clearDone">Temizle</button></div><div class="card">${done.slice(0,30).map(itemHTML).join('')}</div>`;
+  return h;
+}
+function bindMind(){
+  $('#dumpNow').onclick = () => openDump(() => {
+    const day = ensureToday(); const q = allQuest('dump');
+    if(q?.active && !day.done.dump){ day.done.dump = {xp:q.xp, attr:q.attr}; save(); }
+    render();
+  });
+  const add = () => { const v = $('#noteIn').value.trim(); if(!v) return; S.inbox.unshift({id:uid(), text:v, kind:'manual', k:dayKey(), done:false}); save(); render(); };
+  $('#noteAdd').onclick = add;
+  $('#noteIn').addEventListener('keydown', e => { if(e.key === 'Enter') add(); });
+  document.querySelectorAll('[data-tog]').forEach(b => b.onclick = () => { const i = S.inbox.find(x => x.id === b.dataset.tog); i.done = !i.done; save(); render(); });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { S.inbox = S.inbox.filter(x => x.id !== b.dataset.del); save(); render(); });
+  $('#clearDone')?.addEventListener('click', () => { S.inbox = S.inbox.filter(i => !i.done); save(); render(); });
+}
+
+/* ---------------- render: Ayarlar ---------------- */
+function renderSettings(){
+  const p = S.plan;
+  let h = `<div class="hdr"><div class="grow"><div class="lvl mono">AYARLAR</div><h1>Sistem</h1></div></div>
+  <div class="card">
+    <div class="lbl" style="margin-top:0">Karakter adı</div>
+    <input id="sName" value="${esc(S.name)}" maxlength="30" style="margin-top:6px">
+  </div>
+  <div class="card"><h3 style="font-size:15px">Uyku planı</h3>
+    <div class="small muted">Kalkış saati çapadır; yatış saati ondan geriye hesaplanır.</div>
+    <div class="grid2" style="margin-top:10px">
+      <div><div class="lbl" style="margin:0 0 6px">Şu anki çapa</div><input type="time" id="pAnchor" value="${fmtMin(p.anchor)}"></div>
+      <div><div class="lbl" style="margin:0 0 6px">Hedef kalkış</div><input type="time" id="pTarget" value="${fmtMin(p.target)}"></div>
+      <div><div class="lbl" style="margin:0 0 6px">Uyku süresi (saat)</div><input type="number" id="pSleep" min="6" max="10" step="0.5" value="${p.sleepH}"></div>
+      <div><div class="lbl" style="margin:0 0 6px">Adım (dk)</div><select id="pStep">${[10,15,20,30].map(v=>`<option ${v===p.step?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div><div class="lbl" style="margin:0 0 6px">Kaç günde bir</div><select id="pEvery">${[2,3,4,5,7].map(v=>`<option ${v===p.every?'selected':''}>${v}</option>`).join('')}</select></div>
+    </div>
+    <button class="btn pri" id="pSave" style="width:100%;margin-top:12px">Planı kaydet</button>
+    <div class="tiny faint" style="margin-top:8px">Değişiklik yarından itibaren günlere yansır.</div>
+  </div>
+  <div class="card"><h3 style="font-size:15px">Görevler</h3>
+    <div class="small muted">Aç/kapa: görev listede görünür mü. <b>Çekirdek</b>: hafif/dinlenme modunda da görünür.</div>`;
+  for(const q of S.quests){
+    h += `<div class="qe">
+      <div class="grow"><div style="font-weight:500">${esc(q.t.replace('{wake}','çapa').replace('{bed}','hedef'))}</div><div class="tiny">${attrTag(q.attr)} <span class="faint mono">· ${SLOTS[q.slot]} · ${q.xp} XP</span></div></div>
+      <button class="chip ${q.min?'on':''}" data-min="${q.id}">çekirdek</button>
+      <button class="switch ${q.active?'on':''}" data-act="${q.id}" aria-label="aktif"></button>
+      ${q.sys?'':`<button class="faint" data-qdel="${q.id}" style="padding:2px 4px">×</button>`}
+    </div>`;
+  }
+  h += `<hr><div class="lbl" style="margin-top:0">Yeni görev</div>
+    <input id="nqT" placeholder="ör. 15 dk gitar" maxlength="60" style="margin-top:6px">
+    <input id="nqD" placeholder="açıklama (isteğe bağlı)" maxlength="120" style="margin-top:8px">
+    <div class="grid2" style="margin-top:8px">
+      <select id="nqA">${Object.entries(ATTRS).map(([k,A])=>`<option value="${k}">${A.ic} ${A.name}</option>`).join('')}</select>
+      <select id="nqS">${Object.entries(SLOTS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+      <select id="nqX">${[5,10,15,20,25].map(v=>`<option ${v===15?'selected':''} value="${v}">${v} XP</option>`).join('')}</select>
+      <button class="btn" id="nqAdd">Ekle</button>
+    </div>
+  </div>
+  <div class="card"><h3 style="font-size:15px">Veri</h3>
+    <div class="small muted">Her şey sadece bu cihazda. Ara sıra yedek almak iyi fikir.</div>
+    <div class="row wrapf" style="margin-top:10px">
+      <button class="btn sm" id="exp">Yedeği indir</button>
+      <label class="btn sm" style="cursor:pointer">Yedekten yükle<input type="file" id="imp" accept="application/json" hidden></label>
+      <button class="btn sm" id="reset" style="color:#e88">Sıfırla</button>
+    </div>
+  </div>
+  <div class="tiny faint" style="margin:18px 4px;line-height:1.6">me.rpg bir öz-takip aracıdır, tıbbi tavsiye değildir. İlaç ve uyku tedavisi kararları için doktoruna danış.</div>`;
+  return h;
+}
+function bindSettings(){
+  $('#sName').addEventListener('change', e => { S.name = e.target.value.trim() || 'Kahraman'; save(); });
+  $('#pSave').onclick = () => {
+    const p = S.plan, a = toMin($('#pAnchor').value), t = toMin($('#pTarget').value);
+    if(a !== p.anchor){ p.start = Math.max(a, p.start === p.anchor ? a : p.start); p.anchor = a; p.lastShift = dayKey(); }
+    if(p.start < p.anchor) p.start = p.anchor;
+    p.target = t; p.sleepH = Math.min(10, Math.max(6, +$('#pSleep').value || 8));
+    p.step = +$('#pStep').value; p.every = +$('#pEvery').value;
+    save(); toast('Plan kaydedildi.');
+  };
+  document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => { const q = S.quests.find(x => x.id === b.dataset.act); q.active = !q.active; save(); render(); });
+  document.querySelectorAll('[data-min]').forEach(b => b.onclick = () => { const q = S.quests.find(x => x.id === b.dataset.min); q.min = !q.min; save(); render(); });
+  document.querySelectorAll('[data-qdel]').forEach(b => b.onclick = () => {
+    const q = S.quests.find(x => x.id === b.dataset.qdel);
+    if(confirm(`“${q.t}” silinsin mi? Geçmiş XP korunur.`)){ S.quests = S.quests.filter(x => x !== q); save(); render(); }
+  });
+  $('#nqAdd').onclick = () => {
+    const t = $('#nqT').value.trim(); if(!t) return toast('Görev adı yaz.');
+    S.quests.push({id:'c_'+uid(), t, d:$('#nqD').value.trim(), attr:$('#nqA').value, slot:$('#nqS').value, xp:+$('#nqX').value, min:false, active:true});
+    save(); render(); toast('Görev eklendi.');
+  };
+  $('#exp').onclick = () => {
+    const blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `merpg-yedek-${dayKey()}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+  $('#imp').onchange = e => {
+    const f = e.target.files[0]; if(!f) return;
+    f.text().then(txt => { const d = JSON.parse(txt); if(!d.days || !d.quests) throw 0; S = d; save(); render(); toast('Yedek yüklendi.'); })
+      .catch(() => toast('Bu dosya geçerli bir yedek değil.'));
+  };
+  $('#reset').onclick = () => { if(confirm('Tüm ilerleme silinsin mi? Bu geri alınamaz.')){ S = freshState(); save(); tab = 'today'; render(); } };
+}
+
+/* ---------------- onboarding ---------------- */
+function onboarding(){
+  $('#app').innerHTML = `
+  <div style="padding-top:8vh">
+    <div class="lvl mono" style="color:var(--gold);font-size:12px;letter-spacing:.1em">ME.RPG</div>
+    <h1 style="font-size:26px;margin-top:6px">Karakterini kur</h1>
+    <p class="muted">Kişiliğini değiştirmeye değil, ona uygun bir sistem kurmaya geldik. Esnek, sessiz, suçluluk yok.</p>
+    <div class="card">
+      <div class="row" style="gap:14px"><div style="width:64px;height:84px;position:relative;flex:none">${spriteSVG(ENGINEER, PAL).replace('<svg ', '<svg style="width:64px;height:84px" ')}</div>
+        <div><div class="mono tiny" style="color:var(--gold);letter-spacing:.08em">SINIF</div><div style="font-weight:600;font-size:17px">Engineer</div><div class="small muted">Sistemleri çözer, kendi rutinini de tamir eder. Seviye atladıkça ekipman açılır.</div></div></div>
+      <div class="lbl">Karakter adı</div><input id="oName" placeholder="Kahraman" maxlength="30" style="margin-top:6px">
+      <div class="grid2" style="margin-top:4px">
+        <div><div class="lbl">Şu anki kalkış</div><input type="time" id="oNow" value="11:00" style="margin-top:6px"></div>
+        <div><div class="lbl">Hedef kalkış saati</div><input type="time" id="oTarget" value="08:00" style="margin-top:6px"></div>
+      </div>
+      <div class="tiny faint" style="margin-top:10px">Çapa her ${3} günde, ritim oturduysa 15 dk erkene kayar. Ayarlardan değiştirilebilir.</div>
+      <button class="btn pri" id="oGo" style="width:100%;margin-top:14px">Başla</button>
+    </div>
+    <div class="small muted" style="line-height:1.7">
+      <b style="color:var(--tx)">Kurallar</b><br>
+      · Seri yok, zincir kırılmaz. Sadece oran ve ilerleme.<br>
+      · Kötü günde Hafif/Dinlenme modu: az yapmak 1.5× XP.<br>
+      · Kaçırdığın günden sonra “Geri Dönüş” bonusu.<br>
+      · Akşam zihin boşaltma: düşünceler yatağa değil, park alanına.
+    </div>
+  </div>`;
+  $('#nav').style.display = 'none';
+  $('#oGo').onclick = () => {
+    const n = toMin($('#oNow').value || '11:00'), t = toMin($('#oTarget').value || '08:00');
+    S.name = $('#oName').value.trim() || 'Kahraman';
+    S.plan = {...S.plan, start:Math.max(n,t), anchor:Math.max(n,t), target:t, lastShift:dayKey()};
+    S.onboarded = true; save();
+    $('#nav').style.display = '';
+    render();
+  };
+}
+
+/* ---------------- main render ---------------- */
+function render(){
+  if(!S.onboarded) return onboarding();
+  ensureToday();
+  const views = {today:[renderToday, bindToday], hero:[renderHero, null], mind:[renderMind, bindMind], settings:[renderSettings, bindSettings]};
+  const [r, b] = views[tab];
+  $('#app').innerHTML = r();
+  b?.();
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
+  if(pendingToast){ toast(pendingToast, 3600); pendingToast = null; }
+}
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => { tab = b.dataset.tab; window.scrollTo(0,0); render(); }));
+// gün dönümünü yakala (uygulama açık kalırsa / arka plandan dönünce)
+let lastKey = dayKey();
+document.addEventListener('visibilitychange', () => { if(!document.hidden && dayKey() !== lastKey){ lastKey = dayKey(); render(); } });
+setInterval(() => { if(dayKey() !== lastKey){ lastKey = dayKey(); render(); } }, 60e3);
+
+load(); render();
+if('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+navigator.storage?.persist?.().catch(()=>{});
+</script>
+</body>
+</html>
